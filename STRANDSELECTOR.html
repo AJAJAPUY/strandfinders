@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strand Finder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+            background: white;
+            color: black;
+        }
+        #result {
+            font-weight: bold;
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        input, select, button {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #ff9800;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #e68900;
+        }
+        h1, h2, p, label {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+            display: inline-block;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the K-12 Strand Finder</h1>
+    <p>The K-12 program in the Philippines offers specialized academic tracks for students, allowing them to focus on fields suited to their interests and future careers.</p>
+    
+    <h2>Answer the questions below to find your ideal strand:</h2>
+    
+    <form id="strandForm" action="save_response.php" method="POST">
+        <label for="interest">What subject do you enjoy the most?</label>
+        <select id="interest" name="interest" required>
+            <option value="">Select one</option>
+            <option value="HUMSS">Social Sciences, Literature, or Communication</option>
+            <option value="STEM">Math, Science, or Technology</option>
+            <option value="ABM">Business, Finance, or Economics</option>
+            <option value="TVL">Hands-on Skills (Cooking, Mechanics, Carpentry, etc.)</option>
+            <option value="GAS">Undecided</option>
+        </select>
+        <br>
+        
+        <label for="career">What kind of career do you see yourself in?</label>
+        <select id="career" name="career" required>
+            <option value="">Select one</option>
+            <option value="HUMSS">Teacher, Journalist, Lawyer, Psychologist</option>
+            <option value="STEM">Doctor, Engineer, Scientist, IT Specialist</option>
+            <option value="ABM">Business Owner, Accountant, Entrepreneur, Banker</option>
+            <option value="TVL">Chef, Mechanic, Electrician, Fashion Designer</option>
+            <option value="GAS">Still exploring different options</option>
+        </select>
+        <br>
+        
+        <label for="skills">Which skills do you excel at?</label>
+        <select id="skills" name="skills" required>
+            <option value="">Select one</option>
+            <option value="HUMSS">Public Speaking, Writing, Leadership</option>
+            <option value="STEM">Problem Solving, Logical Thinking, Technical Skills</option>
+            <option value="ABM">Negotiation, Marketing, Financial Analysis</option>
+            <option value="TVL">Creativity, Craftsmanship, Technical Proficiency</option>
+            <option value="GAS">Still discovering my strengths</option>
+        </select>
+        <br>
+
+        <label for="personality">Which best describes your personality?</label>
+        <select id="personality" name="personality" required>
+            <option value="">Select one</option>
+            <option value="HUMSS">Empathetic, Expressive, Outgoing</option>
+            <option value="STEM">Analytical, Curious, Detail-Oriented</option>
+            <option value="ABM">Strategic, Competitive, Goal-Oriented</option>
+            <option value="TVL">Hands-On, Practical, Artistic</option>
+            <option value="GAS">Adaptive, Open-Minded, Undecided</option>
+        </select>
+        <br>
+        
+        <button type="button" onclick="findStrand()">Submit</button>
+    </form>
+    <p id="result"></p>
+
+    <script>
+        function findStrand() {
+            let interest = document.getElementById("interest").value;
+            let career = document.getElementById("career").value;
+            let skills = document.getElementById("skills").value;
+            let personality = document.getElementById("personality").value;
+            let strand = "";
+            let explanation = "";
+            
+            let chosenStrands = [interest, career, skills, personality].filter(Boolean);
+            let mostCommon = chosenStrands.sort((a,b) =>
+                chosenStrands.filter(v => v===a).length - chosenStrands.filter(v => v===b).length
+            ).pop();
+            
+            strand = mostCommon || "GAS";
+            
+            let strandNames = {
+                "HUMSS": "HUMSS (Humanities and Social Sciences)",
+                "STEM": "STEM (Science, Technology, Engineering, and Mathematics)",
+                "ABM": "ABM (Accountancy, Business, and Management)",
+                "TVL": "TVL (Technical-Vocational-Livelihood)",
+                "GAS": "GAS (General Academic Strand)"
+            };
+            
+            let strandDescriptions = {
+                "HUMSS": "The HUMSS strand is for students who enjoy social sciences, literature, and public service. This is ideal for those interested in careers such as teaching, journalism, law, and psychology.",
+                "STEM": "The STEM strand is for students interested in science, technology, engineering, and math. It prepares students for careers in medicine, engineering, IT, and scientific research.",
+                "ABM": "The ABM strand is perfect for students aiming to excel in business, finance, and marketing. It is suitable for entrepreneurs, accountants, and future business leaders.",
+                "TVL": "The TVL strand is designed for students who excel in hands-on skills and technical expertise. This track is ideal for those pursuing careers in cooking, mechanics, electronics, and creative industries.",
+                "GAS": "The GAS strand is a great choice for students who are still exploring different options. It provides a broad foundation across multiple disciplines, allowing flexibility in career choices."
+            };
+            
+            explanation = strandDescriptions[strand];
+            
+            document.getElementById("result").innerText = "You are best suited for: " + strandNames[strand] + "\n\n" + explanation;
+        }
+    </script>
+</body>
+</html>
