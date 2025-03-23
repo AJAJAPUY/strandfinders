@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="shortcut icon" type="x-icon" href="d:\jusell\s-modified.png"
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="x-icon" href="d:\jusell\s-modified.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Strand Finder</title>
     <style>
         * {
@@ -45,12 +45,47 @@
             font-weight: bold;
             color: white;
             text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
-            animation: glow 1.5s infinite alternate;
+            animation: glow 1.5s infinite alternate, scaleIn 1s ease forwards;
         }
 
         @keyframes glow {
             0% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.6); }
             100% { text-shadow: 0 0 25px rgba(255, 255, 255, 1); }
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.5);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .loading-container {
+            text-align: center;
+            position: relative;
+            perspective: 1000px;
+        }
+
+        .loading-text {
+            font-size: 24px;
+            color: white;
+            margin-top: 20px;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         
@@ -65,6 +100,18 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        .container.show-container {
+            opacity: 1;
+            transform: translateY(0);
         }
 
     
@@ -89,6 +136,8 @@
             cursor: pointer;
             font-weight: bold;
             width: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.15s, background-color 0.3s;
         }
 
         button:hover {
@@ -96,17 +145,35 @@
             transform: scale(1.05);
         }
 
+        button:active {
+            transform: scale(0.95) translateY(2px);
+        }
+
         
         .emoji {
             position: fixed;
             font-size: 40px;
-            opacity: 0.8;
-            animation: floatAround 3s linear infinite;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+            animation: floatEmoji 4s ease-out infinite;
         }
 
-        @keyframes floatAround {
-            0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
-            100% { transform: translate(100px, 100px) rotate(360deg); opacity: 0; }
+        @keyframes floatEmoji {
+            0% {
+                transform: translateY(100vh) scale(0.5);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-20vh) scale(1.5) rotate(360deg);
+                opacity: 0;
+            }
         }
 
         
@@ -118,13 +185,708 @@
             background: rgba(255, 255, 255, 0.9);
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
+
+        #result-container {
+            transform: scale(0.5);
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #result-container.show {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        #result-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.8),
+                transparent
+            );
+            animation: shine 1.5s ease-in-out;
+            animation-delay: 0.5s;
+        }
+
+        /* Shine effect animation */
+        @keyframes shine {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+
+        /* Enhanced Result Text Animation */
+        #result {
+            animation: popIn 0.6s cubic-bezier(0.17, 0.89, 0.32, 1.49) forwards;
+            animation-delay: 0.3s;
+            opacity: 0;
+            transform: translateY(20px);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Glowing border effect */
+        #result-container.show {
+            animation: glowingBorder 2s infinite alternate;
+        }
+
+        @keyframes glowingBorder {
+            0% {
+                box-shadow: 0 0 10px rgba(77, 142, 243, 0.5);
+            }
+            100% {
+                box-shadow: 0 0 20px rgba(77, 142, 243, 0.8);
+            }
+        }
+
+        #proceed-button {
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.5s ease-out;
+            transition-delay: 0.5s;
+            transform-style: preserve-3d;
+            transition: transform 0.15s, background-color 0.3s;
+        }
+
+        #proceed-button.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        #proceed-button:active {
+            transform: scale(0.95) translateY(2px);
+        }
+
+        /* Background Effects */
+        .bg-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 1s ease-in;
+        }
+
+        /* Strand-specific background styles */
+        .stem-bg {
+            background: linear-gradient(135deg, #A3C9F8, #72A8F5, #4D8EF3);
+            animation: stemGlow 4s infinite alternate;
+        }
+
+        .humss-bg {
+            background: linear-gradient(135deg, #FFB347, #FFCC33, #FFE5B4);
+            animation: humssGlow 4s infinite alternate;
+        }
+
+        .abm-bg {
+            background: linear-gradient(135deg, #90EE90, #98FB98, #3CB371);
+            animation: abmGlow 4s infinite alternate;
+        }
+
+        .ict-bg {
+            background: linear-gradient(135deg, #4B0082, #8A2BE2, #9370DB);
+            animation: ictGlow 4s infinite alternate;
+        }
+
+        .he-bg {
+            background: linear-gradient(135deg, #FF69B4, #FFB6C1, #FFC0CB);
+            animation: heGlow 4s infinite alternate;
+        }
+
+        .gas-bg {
+            background: linear-gradient(135deg, #B8860B, #DAA520, #F0E68C);
+            animation: gasGlow 4s infinite alternate;
+        }
+
+        @keyframes stemGlow { 
+            0% { filter: brightness(1); }
+            100% { filter: brightness(1.3); }
+        }
+        @keyframes humssGlow {
+            0% { filter: brightness(1); }
+            100% { filter: brightness(1.3); }
+        }
+        @keyframes abmGlow {
+            0% { filter: brightness(1); }
+            100% { filter: brightness(1.3); }
+        }
+        @keyframes ictGlow {
+            0% { filter: brightness(1); }
+            100% { filter: brightness(1.3); }
+        }
+        @keyframes heGlow {
+            0% { filter: brightness(1); }
+            100% { filter: brightness(1.3); }
+        }
+        @keyframes gasGlow {
+            0% { filter: brightness(1); }
+            100% { filter: brightness(1.3); }
+        }
+
+        /* Responsive Design Adjustments */
+        @media screen and (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 15px;
+                margin: 10px;
+            }
+
+            input, select, button {
+                width: 100%;
+                font-size: 14px;
+            }
+
+            #result {
+                font-size: 20px;
+                padding: 15px;
+            }
+
+            .emoji {
+                font-size: 30px;
+            }
+
+            #proceed-button {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .container {
+                width: 98%;
+                padding: 10px;
+            }
+
+            h1 { font-size: 24px; }
+            h2 { font-size: 20px; }
+
+            .loading-logo {
+                font-size: 60px;
+            }
+
+            .bg-particle {
+                font-size: 16px !important;
+            }
+
+            #result {
+                font-size: 18px;
+                padding: 10px;
+            }
+        }
+
+        /* Touch Device Optimizations */
+        @media (hover: none) {
+            button:hover, 
+            #proceed-button:hover {
+                transform: none;
+            }
+
+            input, select, button {
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+            }
+        }
+
+        /* Orientation Handling */
+        @media screen and (orientation: landscape) and (max-height: 500px) {
+            .container {
+                margin: 5px auto;
+            }
+
+            input, select, button {
+                margin-top: 5px;
+                padding: 8px;
+            }
+        }
+
+        .loading-logo {
+            font-size: 120px;
+            font-weight: bold;
+            color: #4D8EF3;
+            text-shadow: 0 0 20px rgba(77, 142, 243, 0.8);
+            animation: introAnimation 3s ease-out forwards;
+            opacity: 0;
+            transform-style: preserve-3d;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        @keyframes introAnimation {
+            0% {
+                opacity: 0;
+                transform: rotateY(180deg) scale(0);
+                color: #4D8EF3;
+            }
+            50% {
+                opacity: 1;
+                transform: rotateY(360deg) scale(1.5);
+                color: #fff;
+            }
+            75% {
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+                color: #fff;
+            }
+        }
+
+        .loading-text {
+            position: relative;
+            font-size: 28px;
+            font-weight: bold;
+            color: transparent;
+            background: linear-gradient(45deg, #4D8EF3, #72A8F5, #A3C9F8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            opacity: 0;
+            animation: textReveal 1s ease forwards 2s;
+        }
+
+        @keyframes textReveal {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Ripple Effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Dragon S Animation */
+        .dragon-s {
+            position: relative;
+            font-size: 150px;
+            font-weight: bold;
+            color: #FF3D00;
+            text-shadow: 0 0 20px rgba(255, 61, 0, 0.8);
+            animation: dragonBreath 3s infinite;
+        }
+
+        .dragon-fire {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            filter: blur(10px);
+        }
+
+        @keyframes dragonBreath {
+            0%, 100% {
+                color: #FF3D00;
+                text-shadow: 0 0 20px rgba(255, 61, 0, 0.8),
+                             0 0 40px rgba(255, 61, 0, 0.4),
+                             0 0 60px rgba(255, 61, 0, 0.2);
+                transform: scale(1);
+            }
+            50% {
+                color: #FFD700;
+                text-shadow: 0 0 30px rgba(255, 215, 0, 0.8),
+                             0 0 60px rgba(255, 215, 0, 0.4),
+                             0 0 90px rgba(255, 215, 0, 0.2);
+                transform: scale(1.1);
+            }
+        }
+
+        .dragon-particles {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #FF3D00;
+            border-radius: 50%;
+            filter: blur(1px);
+            animation: dragonParticle 2s ease-out infinite;
+        }
+
+        @keyframes dragonParticle {
+            0% {
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(var(--x)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Enhanced Dragon S Animation */
+        .dragon-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+        }
+
+        .dragon-s {
+            position: relative;
+            font-size: 150px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #FF4D00, #FFD700);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: url(#dragon-texture);
+            animation: dragonMove 3s ease-in-out infinite;
+        }
+
+        .fire-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        @keyframes dragonMove {
+            0%, 100% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
+        }
+
+        /* Morphing Background */
+        .morphing-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(45deg, #12c2e9, #c471ed, #f64f59);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Magnetic Button Effect */
+        .magnetic-button {
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        /* Text Animation */
+        .animated-text {
+            background: linear-gradient(90deg, #12c2e9, #c471ed, #f64f59);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            background-size: 200% auto;
+            animation: textShine 3s linear infinite;
+        }
+
+        @keyframes textShine {
+            to { background-position: 200% center; }
+        }
+
+        /* Character animation for result text */
+        .char-animation {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: charAppear 0.5s forwards;
+        }
+
+        @keyframes charAppear {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Long Shadow Logo Animation */
+        .logo-container {
+            position: relative;
+            perspective: 1000px;
+        }
+
+        .logo-s {
+            font-size: 180px;
+            font-weight: bold;
+            color: #fff;
+            position: relative;
+            animation: revealLogo 2s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .logo-shadow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: translateZ(-1px) skewX(-45deg);
+            background: linear-gradient(90deg, 
+                rgba(0,0,0,0.4) 0%,
+                rgba(0,0,0,0) 100%);
+            animation: revealShadow 2s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: left;
+        }
+
+        @keyframes revealLogo {
+            0% {
+                transform: translateX(-100%) rotateY(90deg);
+                opacity: 0;
+            }
+            50% {
+                transform: translateX(0) rotateY(0deg);
+                opacity: 1;
+            }
+            60% {
+                transform: translateX(0) rotateY(0deg) scale(1);
+            }
+            70% {
+                transform: translateX(0) rotateY(0deg) scale(1.2);
+            }
+            100% {
+                transform: translateX(0) rotateY(0deg) scale(1);
+            }
+        }
+
+        @keyframes revealShadow {
+            0% {
+                transform: translateX(-100%) scaleX(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translateX(0) scaleX(1);
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateX(0) scaleX(1);
+                opacity: 0.15;
+            }
+        }
+
+        /* Result Logo Animation */
+        .result-logo {
+            color: #fff;
+            animation: revealResultLogo 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .result-shadow {
+            background: linear-gradient(90deg, 
+                rgba(255,255,255,0.3) 0%,
+                rgba(255,255,255,0) 100%);
+            animation: revealResultShadow 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes revealResultLogo {
+            0% {
+                transform: translateX(-100%) rotateY(90deg);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0) rotateY(0deg) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes revealResultShadow {
+            0% {
+                transform: translateX(-100%) scaleX(0);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0) scaleX(1);
+                opacity: 0.15;
+            }
+        }
+
+        /* Enhanced Detailed S Styles */
+        .detailed-s {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            transform-style: preserve-3d;
+            perspective: 1200px;
+            animation: floatEffect 6s ease-in-out infinite;
+        }
+
+        .s-decorative-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(255,255,255,0.1) 0px,
+                rgba(255,255,255,0.1) 2px,
+                transparent 2px,
+                transparent 4px
+            );
+            filter: blur(1px);
+            animation: patternShift 20s linear infinite;
+        }
+
+        .s-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 180px;
+            font-weight: bold;
+            mix-blend-mode: overlay;
+        }
+
+        .s-main {
+            background: linear-gradient(135deg, #FF4D00, #FFD700);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            transform: translateZ(20px);
+            filter: url(#bevel);
+        }
+
+        .s-depth {
+            color: rgba(0,0,0,0.3);
+            transform: translateZ(-10px);
+            filter: blur(2px);
+        }
+
+        .s-highlight {
+            background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.8) 45%, transparent 50%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            transform: translateZ(30px);
+            animation: shimmer 3s infinite;
+        }
+
+        .s-outline {
+            color: transparent;
+            -webkit-text-stroke: 2px rgba(255,255,255,0.8);
+            transform: translateZ(40px);
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
+        }
+
+        .s-glow {
+            color: rgba(255,255,255,0.1);
+            filter: blur(8px);
+            transform: translateZ(15px);
+            animation: pulseGlow 2s ease-in-out infinite alternate;
+        }
+
+        .s-shadow {
+            color: rgba(0,0,0,0.2);
+            transform: translateZ(-20px) rotateX(80deg) translateY(50px);
+            filter: blur(4px);
+        }
+
+        .s-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+        }
+
+        @keyframes floatEffect {
+            0%, 100% { transform: translateY(0px) rotateX(10deg); }
+            50% { transform: translateY(-10px) rotateX(-5deg); }
+        }
+
+        @keyframes shimmer {
+            0% { opacity: 0; transform: translateZ(30px) translateX(-100%); }
+            50% { opacity: 1; }
+            100% { opacity: 0; transform: translateZ(30px) translateX(100%); }
+        }
+
+        @keyframes pulseGlow {
+            from { opacity: 0.3; filter: blur(8px); }
+            to { opacity: 0.6; filter: blur(12px); }
+        }
+
+        @keyframes patternShift {
+            from { background-position: 0 0; }
+            to { background-position: 100px 100px; }
+        }
+
+        /* Add these styles for result loading */
+        .result-s {
+            animation: resultSReveal 1s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes resultSReveal {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) rotateY(-90deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotateY(0deg);
+            }
+        }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
 </head>
 <body>
-
+    <!-- Add morphing background -->
+    <div class="morphing-bg"></div>
+    <!-- Add particle background -->
+    <div id="tsparticles"></div>
 
     <div id="loading-screen">
-        <div class="loading-logo">S</div>
+        <div class="loading-container">
+            <div class="logo-container">
+                <div class="logo-shadow"></div>
+                <div class="logo-s">S</div>
+            </div>
+            <div class="loading-text">STRAND SELECTOR</div>
+        </div>
     </div>
 
     
@@ -149,16 +911,18 @@
             <option value="HUMSS">Social Sciences</option>
             <option value="STEM">Math, Science</option>
             <option value="ABM">Business, Finance</option>
-            <option value="TVL">Technical, Vocational</option>
+            <option value="ICT">Information Technology</option>
+            <option value="HE">Home Economics</option>  <!-- Changed from H.E to HE -->
             <option value="GAS">General Studies</option>
         </select>
-
+        
         <select id="career" required>
             <option value="">Select a Career You Want</option>
             <option value="HUMSS">Teacher, Journalist</option>
             <option value="STEM">Doctor, Engineer</option>
             <option value="ABM">Entrepreneur, Accountant</option>
-            <option value="TVL">Chef, Electrician</option>
+            <option value="ICT">Programmer, IT Specialist</option>
+            <option value="HE">Chef, Fashion Designer</option>
             <option value="GAS">Still exploring</option>
         </select>
 
@@ -167,13 +931,26 @@
 
 
     <div id="result-loading">
-        <div class="loading-logo">S</div>
+        <div class="loading-container">
+            <div class="detailed-s result-s">  <!-- Added result-s class -->
+                <div class="s-decorative-layer"></div>
+                <div class="s-layer s-shadow">S</div>
+                <div class="s-layer s-depth">S</div>
+                <div class="s-layer s-main">S</div>
+                <div class="s-layer s-highlight">S</div>
+                <div class="s-layer s-outline">S</div>
+                <div class="s-layer s-glow">S</div>
+                <div class="s-particles"></div>
+            </div>
+        </div>
     </div>
 
     
     <div id="result-container" class="container">
         <p id="result"></p>
+        <a id="proceed-button" href="#" class="button" target="_blank" style="display:none; margin-top: 20px;">Proceed</a>
     </div>
+    
 
     <script>
         setTimeout(() => {
@@ -186,7 +963,9 @@
 
         function showNameSection() {
             document.getElementById("main-content").style.display = "none";
-            document.getElementById("name-section").style.display = "flex";
+            let nameSection = document.getElementById("name-section");
+            nameSection.style.display = "flex";
+            setTimeout(() => nameSection.classList.add('show-container'), 10);
         }
 
         function validateAndProceed() {
@@ -204,46 +983,465 @@
             }
 
             document.getElementById("name-section").style.display = "none";
-            document.getElementById("questionnaire-section").style.display = "flex";
+            let questionnaireSection = document.getElementById("questionnaire-section");
+            questionnaireSection.style.display = "flex";
+            setTimeout(() => questionnaireSection.classList.add('show-container'), 10);
         }
+
+        const links = {
+            GAS: "https://forms.office.com/r/h7rihsr2kW?origin=lprLink",
+            ABM: "https://forms.office.com/r/50FUZvP2bc?origin=lprLink",
+            STEM: "https://forms.office.com/r/3LfYR6WHb0?origin=lprLink",
+            HUMSS: "https://forms.office.com/r/v6RSX9SJih?origin=lprLink",
+            HE: "https://forms.office.com/r/mbwC8bbX89?origin=lprLink",
+            ICT: "https://forms.office.com/r/VVgHgvCe39?origin=lprLink"
+        };
 
         function findStrand() {
             document.getElementById("questionnaire-section").style.display = "none";
-            document.getElementById("result-loading").style.display = "flex";
+            let resultLoading = document.getElementById("result-loading");
+            resultLoading.style.display = "flex";
+            
+            // Start loading animation
+            let detailedS = document.querySelector('.result-s');
+            detailedS.style.opacity = '0';
+            detailedS.style.animation = 'none';
+            detailedS.offsetHeight; // Trigger reflow
+            detailedS.style.animation = 'resultSReveal 1s ease-out forwards';
+            
+            // Create particles for the loading animation
+            createDetailedParticles();
 
             setTimeout(() => {
-                document.getElementById("result-loading").style.display = "none";
-                document.getElementById("result-container").style.display = "flex";
+                // Fade out the loading screen
+                resultLoading.style.opacity = '0';
+                setTimeout(() => {
+                    resultLoading.style.display = "none";
+                    // Show result container
+                    let resultContainer = document.getElementById("result-container");
+                    resultContainer.style.display = "flex";
+                    setTimeout(() => {
+                        resultContainer.classList.add("show");
+                        resultContainer.classList.add('show-container');
+                    }, 100);
+                    
+                    // Rest of the existing findStrand code...
+                    let strand = document.getElementById("interest").value;
+                    let strands = {
+                        HUMSS: "Humanities and Social Sciences",
+                        STEM: "Science, Technology, Engineering, and Mathematics",
+                        ABM: "Accountancy, Business, and Management",
+                        ICT: "Information Technology",
+                        HE: "Home Economics",
+                        GAS: "General Academic Strand"
+                    };
+                    
+                    document.getElementById("result").innerHTML = `Your recommended strand is: <strong>${strands[strand]}</strong>`;
+            
+                    // Clear existing emojis
+                    document.querySelectorAll('.emoji').forEach(e => e.remove());
+                    
+                    let emojiMap = {
+                        HUMSS: ["📚", "✏️"],
+                        STEM: ["🔬", "⭐"],
+                        ABM: ["📊", "💰"],
+                        ICT: ["💻", "📱"],
+                        HE: ["🍳", "🧵"], // Fixed key to match the dropdown value
+                        GAS: ["📷", "👨‍🏫"]
+                    };
+            
+                    if (emojiMap[strand]) {
+                        addFloatingEmojis(emojiMap[strand]);
+                    }
+            
+                    // Show proceed button with animation
+                    let proceedButton = document.getElementById("proceed-button");
+                    proceedButton.style.display = "block";
+                    proceedButton.href = links[strand];
+                    proceedButton.textContent = "Proceed to " + strand + " Form";
+                    
+                    setTimeout(() => {
+                        proceedButton.classList.add("show");
+                    }, 500);
 
-                let strand = document.getElementById("interest").value;
-                document.getElementById("result").innerHTML = `Your recommended strand is: <strong>${strand}</strong>`;
-
-                let emojiMap = {
-                    HUMSS: ["📚", "✏️"],
-                    STEM: ["🔬", "⭐"],
-                    ABM: ["📊", "💰"],
-                    TVL: ["💻", "🌱"],
-                    GAS: ["📷", "👨‍🏫"]
-                };
-
-                addFloatingEmojis(emojiMap[strand]);
+                    // Remove existing background class
+                    document.body.className = '';
+                    
+                    // Add new background class based on strand
+                    document.body.classList.add(strand.toLowerCase() + '-bg');
+                    
+                    // Create background particles
+                    createBackgroundEffects(strand);
+                }, 500);
             }, 2000);
         }
-
+        
         function addFloatingEmojis(emojis) {
+            // Clear existing emojis first
+            document.querySelectorAll('.emoji').forEach(e => e.remove());
+            
             emojis.forEach(emoji => {
-                for (let i = 0; i < 25; i++) {
-                    let el = document.createElement("div");
-                    el.className = "emoji";
-                    el.innerText = emoji;
-                    el.style.left = Math.random() * 100 + "vw";
-                    el.style.top = Math.random() * 100 + "vh";
-                    document.body.appendChild(el);
+                for (let i = 0; i < 15; i++) {
+                    setTimeout(() => {
+                        let el = document.createElement("div");
+                        el.className = "emoji";
+                        el.innerText = emoji;
+                        el.style.left = Math.random() * (window.innerWidth - 50) + "px";
+                        el.style.animationDelay = (Math.random() * 2) + "s";
+                        document.body.appendChild(el);
+                        
+                        // Remove emoji after animation
+                        setTimeout(() => {
+                            el.remove();
+                        }, 4000);
+                    }, i * 200); // Stagger emoji creation
                 }
             });
         }
+
+        function createBackgroundEffects(strand) {
+            // Clear existing particles
+            document.querySelectorAll('.bg-particle').forEach(el => el.remove());
+            
+            const particles = {
+                STEM: ['⚡', '🔍', '🧬', '⚛️'],
+                HUMSS: ['📖', '🎭', '✒️', '🗣️'],
+                ABM: ['📊', '💹', '💰', '📈'],
+                ICT: ['💻', '🌐', '⌨️', '🖥️'],
+                HE: ['🧁', '🎨', '✂️', '🧵'],
+                GAS: ['🎓', '📚', '🔍', '✏️']
+            };
+            
+            const particleCount = 20;
+            const strandParticles = particles[strand];
+            
+            for(let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'bg-particle';
+                particle.textContent = strandParticles[Math.floor(Math.random() * strandParticles.length)];
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.top = Math.random() * 100 + 'vh';
+                particle.style.fontSize = (Math.random() * 20 + 20) + 'px';
+                particle.style.opacity = '0.2';
+                particle.style.transform = `rotate(${Math.random() * 360}deg)`;
+                document.body.appendChild(particle);
+                
+                // Fade in particles
+                setTimeout(() => particle.style.opacity = '0.2', 100);
+            }
+        }
+
+        function createParticles() {
+            const container = document.querySelector('.loading-container');
+            const logo = document.querySelector('.loading-logo');
+            
+            for(let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = 1 + Math.random() * 2;
+                const size = Math.random() * 3;
+                
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                
+                let x = logo.offsetLeft + logo.offsetWidth / 2;
+                let y = logo.offsetTop + logo.offsetHeight / 2;
+                
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                
+                const animation = particle.animate([
+                    { transform: 'translate(0, 0)', opacity: 1 },
+                    { 
+                        transform: `translate(
+                            ${Math.cos(angle) * 100 * velocity}px, 
+                            ${Math.sin(angle) * 100 * velocity}px
+                        )`,
+                        opacity: 0 
+                    }
+                ], {
+                    duration: 1000 + Math.random() * 1000,
+                    easing: 'cubic-bezier(0,0,0.2,1)',
+                    delay: Math.random() * 500
+                });
+                
+                container.appendChild(particle);
+                animation.onfinish = () => particle.remove();
+            }
+        }
+
+        window.addEventListener('load', () => {
+            setTimeout(createParticles, 500);
+            setTimeout(() => {
+                let mainContent = document.getElementById("main-content");
+                mainContent.style.display = "flex";
+                mainContent.classList.add('show-container');
+            }, 2500);
+        });
+
+        // Add ripple effect to buttons
+        document.querySelectorAll('button, #proceed-button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                let ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                this.appendChild(ripple);
+                
+                let x = e.clientX - e.target.offsetLeft;
+                let y = e.clientY - e.target.offsetTop;
+                
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        function createDragonParticles() {
+            const dragonS = document.querySelector('.dragon-s');
+            
+            function createParticle() {
+                const particle = document.createElement('div');
+                particle.className = 'dragon-particles';
+                
+                const x = -50 + Math.random() * 100;
+                particle.style.setProperty('--x', x + 'px');
+                
+                particle.style.left = dragonS.offsetLeft + dragonS.offsetWidth/2 + 'px';
+                particle.style.top = dragonS.offsetTop + dragonS.offsetHeight/2 + 'px';
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 2000);
+            }
+            
+            setInterval(createParticle, 50);
+        }
+
+        window.addEventListener('load', () => {
+            createDragonParticles();
+        });
+
+        // Add new fire effect initialization
+        function initFireEffect() {
+            const canvas = document.querySelector('.fire-canvas');
+            const renderer = new THREE.WebGLRenderer({
+                canvas,
+                alpha: true
+            });
+            
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            camera.position.z = 5;
+
+            // Fire particles
+            const particles = new THREE.BufferGeometry();
+            const particleCount = 1000;
+            const posArray = new Float32Array(particleCount * 3);
+            
+            for(let i = 0; i < particleCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 5;
+            }
+            
+            particles.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            
+            const particleMaterial = new THREE.PointsMaterial({
+                size: 0.02,
+                color: '#FF4D00',
+                blending: THREE.AdditiveBlending,
+                transparent: true
+            });
+
+            const particleSystem = new THREE.Points(particles, particleMaterial);
+            scene.add(particleSystem);
+
+            // Animation
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                particleSystem.rotation.y += 0.001;
+                const positions = particles.attributes.position.array;
+                
+                for(let i = 0; i < positions.length; i += 3) {
+                    positions[i + 1] += 0.01;
+                    if(positions[i + 1] > 2.5) positions[i + 1] = -2.5;
+                }
+                
+                particles.attributes.position.needsUpdate = true;
+                renderer.render(scene, camera);
+            }
+
+            animate();
+
+            // Responsive sizing
+            function onResize() {
+                const container = canvas.parentElement;
+                const width = container.offsetWidth;
+                const height = container.offsetHeight;
+                renderer.setSize(width, height);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            }
+
+            window.addEventListener('resize', onResize);
+            onResize();
+        }
+
+        // Initialize fire effect on load
+        window.addEventListener('load', () => {
+            initFireEffect();
+            createDragonParticles();
+        });
+
+        // Initialize tilt effect
+        VanillaTilt.init(document.querySelectorAll(".container"), {
+            max: 5,
+            speed: 400,
+            glare: true,
+            "max-glare": 0.2
+        });
+
+        // Initialize magnetic buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.classList.add('magnetic-button');
+            button.addEventListener('mousemove', function(e) {
+                const position = button.getBoundingClientRect();
+                const x = e.pageX - position.left - position.width / 2;
+                const y = e.pageY - position.top - position.height / 2;
+                
+                button.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+            });
+            
+            button.addEventListener('mouseout', function() {
+                button.style.transform = 'translate(0px, 0px)';
+            });
+        });
+
+        // Initialize particles
+        tsParticles.load("tsparticles", {
+            particles: {
+                number: { value: 50 },
+                color: { value: "#ffffff" },
+                links: {
+                    enable: true,
+                    color: "#ffffff",
+                    opacity: 0.2
+                },
+                move: {
+                    enable: true,
+                    speed: 1
+                },
+                size: { value: 2 },
+                opacity: { value: 0.3 }
+            },
+            interactivity: {
+                events: {
+                    onHover: {
+                        enable: true,
+                        mode: "grab"
+                    }
+                }
+            }
+        });
+
+        // Add animated text effect
+        document.querySelectorAll('h1, h2').forEach(heading => {
+            heading.classList.add('animated-text');
+        });
+
+        // Enhanced result animation
+        function enhanceResult() {
+            const result = document.getElementById('result');
+            const text = result.textContent;
+            result.textContent = '';
+            
+            text.split('').forEach((char, i) => {
+                const span = document.createElement('span');
+                span.textContent = char;
+                span.style.animationDelay = `${i * 0.05}s`;
+                span.classList.add('char-animation');
+                result.appendChild(span);
+            });
+        }
+
+        // Add this to your window load event
+        window.addEventListener('load', () => {
+            const logoS = document.querySelector('.logo-s');
+            logoS.style.textShadow = '0 2px 10px rgba(0,0,0,0.2)';
+            
+            // Create long shadow effect
+            let shadow = '';
+            for(let i = 0; i < 30; i++) {
+                shadow += `${i}px ${i}px 0 rgba(0,0,0,${0.07 - i * 0.002}),`;
+            }
+            shadow = shadow.slice(0, -1); // remove last comma
+            logoS.style.textShadow = shadow;
+        });
+
+        // Add particle effect for detailed S
+        function createDetailedParticles() {
+            const container = document.querySelector('.s-particles');
+            for(let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.cssText = `
+                    position: absolute;
+                    width: 2px;
+                    height: 2px;
+                    background: white;
+                    border-radius: 50%;
+                    left: ${Math.random() * 100}%;
+                    top: ${Math.random() * 100}%;
+                    animation: floatParticle ${2 + Math.random() * 2}s infinite;
+                `;
+                container.appendChild(particle);
+            }
+        }
+
+        // Initialize the detailed S effects
+        window.addEventListener('load', () => {
+            createDetailedParticles();
+        });
     </script>
+    <style>
+        #proceed-button {
+            display: none;
+            background-color: #4D8EF3;
+            color: white;
+            font-size: 18px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-top: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        #proceed-button:hover {
+            background-color: #3B76D1;
+            transform: scale(1.05);
+        }
+    </style>
+    <svg style="position: absolute; width: 0; height: 0;" aria-hidden="true" focusable="false">
+        <defs>
+            <filter id="dragon-texture">
+                <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="5" seed="1"/>
+                <feDisplacementMap in="SourceGraphic" scale="5"/>
+                <feGaussianBlur stdDeviation="0.5"/>
+            </filter>
+            <filter id="bevel">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/>
+                <feSpecularLighting in="blur" surfaceScale="5" specularConstant="0.5" specularExponent="10" lighting-color="#white" result="specular">
+                    <fePointLight x="-100" y="-100" z="200"/>
+                </feSpecularLighting>
+                <feComposite in="specular" in2="SourceAlpha" operator="in" result="specular"/>
+                <feComposite in="SourceGraphic" in2="specular" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+            </filter>
+        </defs>
+    </svg>
+    
 
 </body>
 </html>
-
